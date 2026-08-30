@@ -2,25 +2,27 @@
 
 ## Descripción
 
-Este proyecto consiste en un administrador de servicios desarrollado con Node.js y JavaScript utilizando módulos ESM.
+Este proyecto consiste en una API REST desarrollada con Node.js y Express para gestionar servicios de un sistema de turnos y reservas.
 
-El objetivo es gestionar los servicios de un sistema de turnos y reservas mediante una clase llamada `ServiceManager`.
-
-El sistema permite:
-
-- Consultar todos los servicios.
-- Buscar un servicio por su identificador.
-- Agregar nuevos servicios.
-- Actualizar servicios existentes.
-- Eliminar servicios.
-- Validar que los servicios tengan todos los datos requeridos.
-- Generar automáticamente el identificador de cada nuevo servicio.
+El proyecto utiliza una clase `ServiceManager` para manejar la lógica de los servicios y un router de Express para exponer los endpoints de la API.
 
 Los datos se almacenan actualmente en un archivo JSON que funciona como una base de datos simulada.
+
+La API permite:
+
+- Consultar todos los servicios.
+- Buscar un servicio por su ID.
+- Filtrar servicios por categoría y disponibilidad.
+- Crear nuevos servicios.
+- Actualizar servicios existentes.
+- Eliminar servicios.
+- Validar los datos recibidos.
+- Generar automáticamente el ID de nuevos servicios.
 
 ## Tecnologías utilizadas
 
 - Node.js
+- Express
 - JavaScript
 - ESM (ECMAScript Modules)
 - dotenv
@@ -41,19 +43,34 @@ backend-i---cursando/
 │   ├── managers/
 │   │   └── ServiceManager.js
 │   │
-│   └── app.js
+│   ├── routes/
+│   │   └── services.router.js
+│   │
+│   ├── app.js
+│   └── server.js
 │
-├── .env
 ├── .env.example
 ├── .gitignore
 ├── package-lock.json
 ├── package.json
 └── README.md
-```
+````
 
 ## Instalación
 
-Para instalar las dependencias del proyecto, ejecutar:
+Clonar el repositorio:
+
+```bash
+git clone https://github.com/TomasAntipas/Entrega1-Backend-CoderHouse.git
+```
+
+Ingresar a la carpeta del proyecto:
+
+```bash
+cd Entrega1-Backend-CoderHouse
+```
+
+Instalar las dependencias:
 
 ```bash
 npm install
@@ -61,217 +78,324 @@ npm install
 
 ## Variables de entorno
 
-El proyecto utiliza `dotenv` para gestionar las variables de entorno.
+El proyecto utiliza `dotenv` para cargar las variables de entorno.
 
-Crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+Se debe crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
 
 ```env
 PORT=8080
 NODE_ENV=development
 ```
 
-También se incluye un archivo `.env.example` como plantilla:
+El archivo `.env` es de uso local y no debe subirse al repositorio.
+
+También se incluye el archivo `.env.example` como referencia:
 
 ```env
 PORT=
 NODE_ENV=
 ```
 
-El archivo `.env` no debe ser subido al repositorio.
-
-## Configuración
-
-Las variables de entorno son cargadas y validadas desde:
-
-```text
-src/config/env.config.js
-```
-
-La aplicación utiliza un patrón Fail-Fast para evitar que el proyecto se ejecute si falta alguna variable de entorno requerida.
+El archivo `src/config/env.config.js` se encarga de cargar y validar que las variables de entorno requeridas estén definidas.
 
 ## Ejecución
 
-Para ejecutar el proyecto desde la raíz:
+Para iniciar el servidor:
 
 ```bash
-node src/app.js
+node src/server.js
 ```
 
-El archivo `app.js` instancia `ServiceManager` y ejecuta diferentes operaciones para comprobar el funcionamiento de sus métodos.
+El servidor se ejecutará en:
+
+```text
+http://localhost:8080
+```
 
 ## Recurso Services
 
-El proyecto administra un recurso llamado `services`.
+El recurso principal de la API es `services`.
 
-Cada servicio tiene la siguiente estructura:
+Cada servicio posee la siguiente estructura:
 
-```json
+```js
 {
-  "id": 1,
-  "name": "Corte de cabello",
-  "description": "Corte de cabello clásico",
-  "duration": 30,
-  "price": 8000,
-  "category": "Peluquería",
-  "available": true
+    id,
+    name,
+    description,
+    duration,
+    price,
+    category,
+    available
 }
 ```
 
-### Propiedades
+Ejemplo:
 
-| Propiedad | Descripción |
-|---|---|
-| `id` | Identificador único del servicio |
-| `name` | Nombre del servicio |
-| `description` | Descripción del servicio |
-| `duration` | Duración del servicio |
-| `price` | Precio del servicio |
-| `category` | Categoría a la que pertenece |
-| `available` | Indica si el servicio está disponible |
-
-## ServiceManager
-
-La clase `ServiceManager` se encuentra en:
-
-```text
-src/managers/ServiceManager.js
+```json
+{
+    "id": 1,
+    "name": "Corte de cabello",
+    "description": "Corte de cabello clásico",
+    "duration": 30,
+    "price": 8000,
+    "category": "Peluquería",
+    "available": true
+}
 ```
 
-Esta clase centraliza la lógica necesaria para administrar los servicios.
+La lógica de gestión de los servicios se encuentra implementada en la clase `ServiceManager`.
 
-### getServices()
+### Métodos de ServiceManager
+
+* `getServices()` → devuelve todos los servicios.
+* `getServiceById(id)` → devuelve un servicio por su ID.
+* `addService(serviceData)` → agrega un nuevo servicio y genera automáticamente su ID.
+* `updateService(id, updatedData)` → actualiza un servicio existente.
+* `deleteService(id)` → elimina un servicio existente.
+
+## Endpoints REST
+
+La API utiliza el siguiente prefijo:
+
+```text
+/api/services
+```
+
+### GET /api/services
 
 Devuelve todos los servicios disponibles.
 
-Ejemplo:
-
-```js
-manager.getServices();
+```text
+GET http://localhost:8080/api/services
 ```
 
-### getServiceById(id)
+### Filtros mediante query params
 
-Busca un servicio utilizando su identificador.
+El endpoint permite filtrar los servicios mediante `category` y `available`.
 
-Ejemplo:
+Filtrar por categoría:
 
-```js
-manager.getServiceById(2);
+```text
+GET http://localhost:8080/api/services?category=Estética
 ```
 
-Si el servicio existe, devuelve el objeto correspondiente. Si no existe, devuelve `null`.
+Filtrar por disponibilidad:
 
-### addService(serviceData)
-
-Agrega un nuevo servicio.
-
-El `id` se genera automáticamente dentro de `ServiceManager`, por lo que no debe enviarse como parte de los datos recibidos.
-
-Ejemplo:
-
-```js
-manager.addService({
-  name: 'Limpieza facial',
-  description: 'Limpieza facial profunda',
-  duration: 50,
-  price: 12000,
-  category: 'Estética',
-  available: true
-});
+```text
+GET http://localhost:8080/api/services?available=true
 ```
 
-El método valida que estén presentes los siguientes campos:
+También es posible utilizar ambos filtros:
 
-- `name`
-- `description`
-- `duration`
-- `price`
-- `category`
-- `available`
+```text
+GET http://localhost:8080/api/services?category=Estética&available=true
+```
 
-Si falta alguno de estos campos, el servicio es rechazado.
+Los filtros se reciben mediante `req.query`.
 
-### updateService(id, updatedData)
+## GET /api/services/:sid
 
-Actualiza los datos de un servicio existente.
-
-El identificador del servicio no puede ser modificado.
+Devuelve un servicio específico utilizando su ID.
 
 Ejemplo:
 
-```js
-manager.updateService(2, {
-  price: 18000
-});
+```text
+GET http://localhost:8080/api/services/2
 ```
 
-Si el servicio no existe, devuelve `null`.
+Si el servicio existe, devuelve:
 
-### deleteService(id)
+```text
+200 OK
+```
 
-Elimina un servicio utilizando su identificador.
+Si el servicio no existe, devuelve:
+
+```text
+404 Not Found
+```
+
+```json
+{
+    "error": "Servicio no encontrado"
+}
+```
+
+El ID se obtiene mediante `req.params`.
+
+## POST /api/services
+
+Crea un nuevo servicio.
+
+```text
+POST http://localhost:8080/api/services
+```
+
+El body debe contener los datos del servicio, excepto el ID.
 
 Ejemplo:
 
-```js
-manager.deleteService(3);
+```json
+{
+    "name": "Limpieza facial",
+    "description": "Limpieza facial profunda",
+    "duration": 50,
+    "price": 12000,
+    "category": "Estética",
+    "available": true
+}
 ```
 
-Si el servicio no existe, devuelve `null`.
+El ID se genera automáticamente mediante `ServiceManager`.
 
-## Ejemplo de uso
+Respuesta exitosa:
 
-El archivo `app.js` contiene ejemplos de utilización de los métodos de `ServiceManager`.
-
-Por ejemplo:
-
-```js
-const manager = new ServiceManager();
-
-manager.getServices();
-
-manager.getServiceById(2);
-
-manager.addService({
-  name: 'Limpieza facial',
-  description: 'Limpieza facial profunda',
-  duration: 50,
-  price: 12000,
-  category: 'Estética',
-  available: true
-});
-
-manager.updateService(2, {
-  price: 18000
-});
-
-manager.deleteService(3);
+```text
+201 Created
 ```
 
-## Validaciones
+Ejemplo:
 
-El proyecto contempla diferentes casos de error:
+```json
+{
+    "name": "Limpieza facial",
+    "description": "Limpieza facial profunda",
+    "duration": 50,
+    "price": 12000,
+    "category": "Estética",
+    "available": true,
+    "id": 4
+}
+```
 
-- Búsqueda de un servicio inexistente.
-- Actualización de un servicio inexistente.
-- Eliminación de un servicio inexistente.
-- Intento de agregar un servicio incompleto.
-- Falta de variables de entorno requeridas.
+Si faltan campos obligatorios:
 
-En los casos correspondientes, el sistema devuelve `null` o genera un error descriptivo.
+```text
+400 Bad Request
+```
 
-## Seguridad y buenas prácticas
+El body de la petición se obtiene mediante `req.body`.
 
-El proyecto utiliza un archivo `.env` para las variables de entorno.
+## PUT /api/services/:sid
 
-El archivo `.env` y la carpeta `node_modules` se encuentran incluidos en `.gitignore` para evitar que sean subidos al repositorio.
+Actualiza un servicio existente.
 
-El archivo `.env.example` se incluye como referencia para indicar las variables necesarias sin exponer información sensible.
+Ejemplo:
 
-## Autor
+```text
+PUT http://localhost:8080/api/services/2
+```
 
-Tomás
+Se pueden enviar los campos que se desean modificar.
 
-## Estado del proyecto
+Ejemplo:
 
-Proyecto desarrollado como parte de la cursada de Backend I - Coderhouse.
+```json
+{
+    "price": 18000
+}
+```
+
+Respuesta exitosa:
+
+```text
+200 OK
+```
+
+No se permite modificar el ID del servicio.
+
+Si se intenta modificar el ID:
+
+```text
+400 Bad Request
+```
+
+Si el servicio no existe:
+
+```text
+404 Not Found
+```
+
+## DELETE /api/services/:sid
+
+Elimina un servicio existente.
+
+Ejemplo:
+
+```text
+DELETE http://localhost:8080/api/services/3
+```
+
+Si el servicio existe:
+
+```text
+200 OK
+```
+
+La respuesta contiene el servicio eliminado.
+
+Si el servicio no existe:
+
+```text
+404 Not Found
+```
+
+## Códigos de estado HTTP
+
+| Código | Significado                       |
+| ------ | --------------------------------- |
+| 200    | Operación realizada correctamente |
+| 201    | Recurso creado correctamente      |
+| 400    | Datos incorrectos o incompletos   |
+| 404    | Recurso no encontrado             |
+
+## Arquitectura
+
+El proyecto separa las responsabilidades de la aplicación.
+
+### ServiceManager
+
+Contiene la lógica relacionada con la gestión de los servicios.
+
+Se encarga de:
+
+* Obtener servicios.
+* Buscar servicios por ID.
+* Crear servicios.
+* Generar IDs.
+* Actualizar servicios.
+* Eliminar servicios.
+* Validar los datos necesarios.
+
+### services.router.js
+
+Contiene las rutas REST del recurso `services`.
+
+Se encarga de recibir las peticiones HTTP y comunicarse con `ServiceManager`.
+
+### app.js
+
+Configura Express, habilita el procesamiento de JSON y registra el router de servicios.
+
+### server.js
+
+Inicia el servidor utilizando el puerto definido en las variables de entorno.
+
+### env.config.js
+
+Carga las variables de entorno mediante `dotenv` y valida que las variables requeridas estén definidas.
+
+## Seguridad y archivos excluidos
+
+Los siguientes archivos y carpetas no deben subirse al repositorio:
+
+```text
+node_modules/
+.env
+```
+
+El archivo `.env.example` se incluye para indicar las variables de entorno necesarias sin exponer valores reales.
+
+```
+```
