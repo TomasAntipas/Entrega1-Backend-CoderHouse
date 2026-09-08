@@ -1,401 +1,274 @@
-# Administrador de Servicios - Node.js
+# Sistema Backend de Turnos y Reservas
 
 ## Descripción
 
-Este proyecto consiste en una API REST desarrollada con Node.js y Express para gestionar servicios de un sistema de turnos y reservas.
+API REST desarrollada con Node.js, Express y FileSystem para gestionar servicios y reservas de turnos.
 
-El proyecto utiliza una clase `ServiceManager` para manejar la lógica de los servicios y un router de Express para exponer los endpoints de la API.
-
-Los datos se almacenan actualmente en un archivo JSON que funciona como una base de datos simulada.
-
-La API permite:
-
-- Consultar todos los servicios.
-- Buscar un servicio por su ID.
-- Filtrar servicios por categoría y disponibilidad.
-- Crear nuevos servicios.
-- Actualizar servicios existentes.
-- Eliminar servicios.
-- Validar los datos recibidos.
-- Generar automáticamente el ID de nuevos servicios.
+La información se persiste en archivos JSON, por lo que los datos se mantienen aunque el servidor se reinicie.
 
 ## Tecnologías utilizadas
 
 - Node.js
 - Express
 - JavaScript
-- ESM (ECMAScript Modules)
+- ESM
 - dotenv
+- FileSystem
 - JSON
 
 ## Estructura del proyecto
 
-```text
-backend-i---cursando/
-│
-├── src/
-│   ├── config/
-│   │   └── env.config.js
-│   │
-│   ├── data/
-│   │   └── services.json
-│   │
-│   ├── managers/
-│   │   └── ServiceManager.js
-│   │
-│   ├── routes/
-│   │   └── services.router.js
-│   │
-│   ├── app.js
-│   └── server.js
-│
-├── .env.example
-├── .gitignore
-├── package-lock.json
-├── package.json
-└── README.md
-````
+    src/
+    ├── config/
+    │   └── env.config.js
+    ├── data/
+    │   ├── services.json
+    │   └── bookings.json
+    ├── managers/
+    │   ├── ServiceManager.js
+    │   └── BookingManager.js
+    ├── routes/
+    │   ├── services.router.js
+    │   └── bookings.router.js
+    ├── app.js
+    └── server.js
+
+    .env.example
+    .gitignore
+    package-lock.json
+    package.json
+    README.md
 
 ## Instalación
 
 Clonar el repositorio:
 
-```bash
-git clone https://github.com/TomasAntipas/Entrega1-Backend-CoderHouse.git
-```
+    git clone https://github.com/TomasAntipas/Entrega1-Backend-CoderHouse.git
 
-Ingresar a la carpeta del proyecto:
+Ingresar al proyecto:
 
-```bash
-cd Entrega1-Backend-CoderHouse
-```
+    cd Entrega1-Backend-CoderHouse
 
 Instalar las dependencias:
 
-```bash
-npm install
-```
+    npm install
 
 ## Variables de entorno
 
-El proyecto utiliza `dotenv` para cargar las variables de entorno.
+Crear un archivo `.env` en la raíz del proyecto con:
 
-Se debe crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+    PORT=8080
+    NODE_ENV=development
 
-```env
-PORT=8080
-NODE_ENV=development
-```
+El archivo `.env` no debe subirse al repositorio.
 
-El archivo `.env` es de uso local y no debe subirse al repositorio.
-
-También se incluye el archivo `.env.example` como referencia:
-
-```env
-PORT=
-NODE_ENV=
-```
-
-El archivo `src/config/env.config.js` se encarga de cargar y validar que las variables de entorno requeridas estén definidas.
+Se incluye `.env.example` como referencia.
 
 ## Ejecución
 
 Para iniciar el servidor:
 
-```bash
-node src/server.js
-```
+    npm start
 
 El servidor se ejecutará en:
 
-```text
-http://localhost:8080
-```
+    http://localhost:8080
 
 ## Recurso Services
 
-El recurso principal de la API es `services`.
+Cada servicio posee los siguientes campos:
 
-Cada servicio posee la siguiente estructura:
-
-```js
-{
-    id,
-    name,
-    description,
-    duration,
-    price,
-    category,
-    available
-}
-```
-
-Ejemplo:
-
-```json
-{
-    "id": 1,
-    "name": "Corte de cabello",
-    "description": "Corte de cabello clásico",
-    "duration": 30,
-    "price": 8000,
-    "category": "Peluquería",
-    "available": true
-}
-```
-
-La lógica de gestión de los servicios se encuentra implementada en la clase `ServiceManager`.
-
-### Métodos de ServiceManager
-
-* `getServices()` → devuelve todos los servicios.
-* `getServiceById(id)` → devuelve un servicio por su ID.
-* `addService(serviceData)` → agrega un nuevo servicio y genera automáticamente su ID.
-* `updateService(id, updatedData)` → actualiza un servicio existente.
-* `deleteService(id)` → elimina un servicio existente.
-
-## Endpoints REST
-
-La API utiliza el siguiente prefijo:
-
-```text
-/api/services
-```
+- id
+- name
+- description
+- duration
+- price
+- category
+- available
 
 ### GET /api/services
 
-Devuelve todos los servicios disponibles.
+Devuelve todos los servicios.
 
-```text
-GET http://localhost:8080/api/services
-```
+    GET http://localhost:8080/api/services
 
-### Filtros mediante query params
+También permite utilizar filtros mediante query params:
 
-El endpoint permite filtrar los servicios mediante `category` y `available`.
+    GET http://localhost:8080/api/services?category=Estética
 
-Filtrar por categoría:
+    GET http://localhost:8080/api/services?available=true
 
-```text
-GET http://localhost:8080/api/services?category=Estética
-```
+### GET /api/services/:sid
 
-Filtrar por disponibilidad:
+Devuelve un servicio específico mediante su ID.
 
-```text
-GET http://localhost:8080/api/services?available=true
-```
+    GET http://localhost:8080/api/services/2
 
-También es posible utilizar ambos filtros:
-
-```text
-GET http://localhost:8080/api/services?category=Estética&available=true
-```
-
-Los filtros se reciben mediante `req.query`.
-
-## GET /api/services/:sid
-
-Devuelve un servicio específico utilizando su ID.
-
-Ejemplo:
-
-```text
-GET http://localhost:8080/api/services/2
-```
-
-Si el servicio existe, devuelve:
-
-```text
-200 OK
-```
-
-Si el servicio no existe, devuelve:
-
-```text
-404 Not Found
-```
-
-```json
-{
-    "error": "Servicio no encontrado"
-}
-```
-
-El ID se obtiene mediante `req.params`.
-
-## POST /api/services
+### POST /api/services
 
 Crea un nuevo servicio.
 
-```text
-POST http://localhost:8080/api/services
-```
+El ID se genera automáticamente y no debe enviarse desde el body.
 
-El body debe contener los datos del servicio, excepto el ID.
+    POST http://localhost:8080/api/services
 
-Ejemplo:
+Ejemplo de body:
 
-```json
-{
-    "name": "Limpieza facial",
-    "description": "Limpieza facial profunda",
-    "duration": 50,
-    "price": 12000,
-    "category": "Estética",
-    "available": true
-}
-```
+    {
+        "name": "Limpieza facial",
+        "description": "Limpieza facial profunda",
+        "duration": 50,
+        "price": 12000,
+        "category": "Estética",
+        "available": true
+    }
 
-El ID se genera automáticamente mediante `ServiceManager`.
-
-Respuesta exitosa:
-
-```text
-201 Created
-```
-
-Ejemplo:
-
-```json
-{
-    "name": "Limpieza facial",
-    "description": "Limpieza facial profunda",
-    "duration": 50,
-    "price": 12000,
-    "category": "Estética",
-    "available": true,
-    "id": 4
-}
-```
-
-Si faltan campos obligatorios:
-
-```text
-400 Bad Request
-```
-
-El body de la petición se obtiene mediante `req.body`.
-
-## PUT /api/services/:sid
+### PUT /api/services/:sid
 
 Actualiza un servicio existente.
 
-Ejemplo:
+    PUT http://localhost:8080/api/services/2
 
-```text
-PUT http://localhost:8080/api/services/2
-```
+Ejemplo de body:
 
-Se pueden enviar los campos que se desean modificar.
+    {
+        "price": 18000
+    }
 
-Ejemplo:
+No se permite modificar el ID.
 
-```json
-{
-    "price": 18000
-}
-```
-
-Respuesta exitosa:
-
-```text
-200 OK
-```
-
-No se permite modificar el ID del servicio.
-
-Si se intenta modificar el ID:
-
-```text
-400 Bad Request
-```
-
-Si el servicio no existe:
-
-```text
-404 Not Found
-```
-
-## DELETE /api/services/:sid
+### DELETE /api/services/:sid
 
 Elimina un servicio existente.
 
-Ejemplo:
+    DELETE http://localhost:8080/api/services/3
 
-```text
-DELETE http://localhost:8080/api/services/3
-```
+## Recurso Bookings
 
-Si el servicio existe:
+Cada reserva posee:
 
-```text
-200 OK
-```
+- id
+- clientName
+- clientEmail
+- date
+- time
+- status
+- services
 
-La respuesta contiene el servicio eliminado.
+El ID se genera automáticamente.
 
-Si el servicio no existe:
+Los servicios dentro de una reserva se almacenan de la siguiente manera:
 
-```text
-404 Not Found
-```
+    {
+        "service": 2,
+        "quantity": 1
+    }
 
-## Códigos de estado HTTP
+Si se agrega nuevamente el mismo servicio, se incrementa la cantidad.
 
-| Código | Significado                       |
-| ------ | --------------------------------- |
-| 200    | Operación realizada correctamente |
-| 201    | Recurso creado correctamente      |
-| 400    | Datos incorrectos o incompletos   |
-| 404    | Recurso no encontrado             |
+### POST /api/bookings
 
-## Arquitectura
+Crea una nueva reserva.
 
-El proyecto separa las responsabilidades de la aplicación.
+La reserva puede comenzar con el array `services` vacío.
+
+    POST http://localhost:8080/api/bookings
+
+Ejemplo de body:
+
+    {
+        "clientName": "Juan Pérez",
+        "clientEmail": "juan@email.com",
+        "date": "2026-09-10",
+        "time": "10:00",
+        "status": "confirmed",
+        "services": []
+    }
+
+### GET /api/bookings/:bid
+
+Devuelve una reserva mediante su ID.
+
+    GET http://localhost:8080/api/bookings/1
+
+### POST /api/bookings/:bid/services/:sid
+
+Agrega un servicio existente a una reserva existente.
+
+    POST http://localhost:8080/api/bookings/1/services/2
+
+La API valida que tanto la reserva como el servicio existan.
+
+Si el servicio ya fue agregado, se incrementa `quantity`.
+
+## Persistencia
+
+Los datos se almacenan mediante FileSystem en:
+
+    src/data/services.json
+    src/data/bookings.json
+
+Las operaciones de creación, modificación y eliminación actualizan los archivos JSON.
+
+De esta manera, los datos no se pierden al reiniciar el servidor.
+
+## Managers
 
 ### ServiceManager
 
-Contiene la lógica relacionada con la gestión de los servicios.
+Gestiona `services.json` mediante los siguientes métodos:
 
-Se encarga de:
+- getServices()
+- getServiceById()
+- addService()
+- updateService()
+- deleteService()
 
-* Obtener servicios.
-* Buscar servicios por ID.
-* Crear servicios.
-* Generar IDs.
-* Actualizar servicios.
-* Eliminar servicios.
-* Validar los datos necesarios.
+### BookingManager
 
-### services.router.js
+Gestiona `bookings.json` mediante:
 
-Contiene las rutas REST del recurso `services`.
+- createBooking()
+- getBookingById()
+- addServiceToBooking()
 
-Se encarga de recibir las peticiones HTTP y comunicarse con `ServiceManager`.
+## Códigos HTTP utilizados
 
-### app.js
+- 200 - Operación exitosa
+- 201 - Recurso creado
+- 400 - Datos incorrectos o incompletos
+- 404 - Recurso no encontrado
+- 500 - Error interno
 
-Configura Express, habilita el procesamiento de JSON y registra el router de servicios.
+## Arquitectura
 
-### server.js
+El proyecto separa las responsabilidades de la siguiente manera:
 
-Inicia el servidor utilizando el puerto definido en las variables de entorno.
+    Cliente
+       ↓
+    server.js
+       ↓
+    app.js
+       ↓
+    Router
+       ↓
+    Manager
+       ↓
+    Archivo JSON
 
-### env.config.js
+`server.js` inicia el servidor.
 
-Carga las variables de entorno mediante `dotenv` y valida que las variables requeridas estén definidas.
+`app.js` configura Express y registra los routers.
 
-## Seguridad y archivos excluidos
+Los routers reciben las peticiones HTTP.
 
-Los siguientes archivos y carpetas no deben subirse al repositorio:
+Los managers contienen la lógica de cada recurso y gestionan la persistencia mediante FileSystem.
 
-```text
-node_modules/
-.env
-```
+## Archivos excluidos
 
-El archivo `.env.example` se incluye para indicar las variables de entorno necesarias sin exponer valores reales.
+Por seguridad, no se incluyen en el repositorio:
 
-```
-```
+    node_modules/
+    .env
+
+El archivo `.env.example` se incluye como referencia para configurar las variables de entorno.

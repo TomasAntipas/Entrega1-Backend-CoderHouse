@@ -1,19 +1,29 @@
-import services from '../data/services.json' with { type: 'json' };
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const servicesPath = path.join(__dirname, '../data/services.json');
 
 class ServiceManager {
-    constructor() {
-        this.services = services;
+    async getServices() {
+        const data = await fs.readFile(servicesPath, 'utf-8');
+        return JSON.parse(data);
     }
 
-    getServices() {
-        return this.services;
+    async getServiceById(id) {
+        const services = await this.getServices();
+
+        return services.find(
+            service => service.id === Number(id)
+        ) || null;
     }
 
-    getServiceById(id) {
-        return this.services.find(service => service.id === Number(id)) || null;
-    }
+    async addService(serviceData) {
+        const services = await this.getServices();
 
-    addService(serviceData) {
         const requiredFields = [
             'name',
             'description',
@@ -28,11 +38,13 @@ class ServiceManager {
         );
 
         if (!hasAllFields) {
-            throw new Error('El servicio debe contener todos los campos requeridos');
+            throw new Error(
+                'El servicio debe contener todos los campos requeridos'
+            );
         }
 
-        const newId = this.services.length > 0
-            ? Math.max(...this.services.map(service => service.id)) + 1
+        const newId = services.length > 0
+            ? Math.max(...services.map(service => service.id)) + 1
             : 1;
 
         const newService = {
@@ -40,13 +52,17 @@ class ServiceManager {
             id: newId
         };
 
-        this.services.push(newService);
+        services.push(newService);
+
+        await this.saveServices(services);
 
         return newService;
     }
 
-    updateService(id, updatedData) {
-        const index = this.services.findIndex(
+    async updateService(id, updatedData) {
+        const services = await this.getServices();
+
+        const index = services.findIndex(
             service => service.id === Number(id)
         );
 
@@ -55,18 +71,22 @@ class ServiceManager {
         }
 
         const updatedService = {
-            ...this.services[index],
+            ...services[index],
             ...updatedData,
-            id: this.services[index].id
+            id: services[index].id
         };
 
-        this.services[index] = updatedService;
+        services[index] = updatedService;
+
+        await this.saveServices(services);
 
         return updatedService;
     }
 
-    deleteService(id) {
-        const index = this.services.findIndex(
+    async deleteService(id) {
+        const services = await this.getServices();
+
+        const index = services.findIndex(
             service => service.id === Number(id)
         );
 
@@ -74,9 +94,18 @@ class ServiceManager {
             return null;
         }
 
-        const deletedService = this.services.splice(index, 1);
+        const deletedService = services.splice(index, 1)[0];
 
-        return deletedService[0];
+        await this.saveServices(services);
+
+        return deletedService;
+    }
+
+    async saveServices(services) {
+        await fs.writeFile(
+            servicesPath,
+            JSON.stringify(services, null, 2)
+        );
     }
 }
 
