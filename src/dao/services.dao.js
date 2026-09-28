@@ -7,41 +7,23 @@ const __dirname = path.dirname(__filename);
 
 const servicesPath = path.join(__dirname, '../data/services.json');
 
-class ServiceManager {
-    async getServices() {
+class ServicesDAO {
+    async getAll() {
         const data = await fs.readFile(servicesPath, 'utf-8');
+
         return JSON.parse(data);
     }
 
-    async getServiceById(id) {
-        const services = await this.getServices();
+    async getById(id) {
+        const services = await this.getAll();
 
         return services.find(
             service => service.id === Number(id)
         ) || null;
     }
 
-    async addService(serviceData) {
-        const services = await this.getServices();
-
-        const requiredFields = [
-            'name',
-            'description',
-            'duration',
-            'price',
-            'category',
-            'available'
-        ];
-
-        const hasAllFields = requiredFields.every(
-            field => serviceData[field] !== undefined
-        );
-
-        if (!hasAllFields) {
-            throw new Error(
-                'El servicio debe contener todos los campos requeridos'
-            );
-        }
+    async create(serviceData) {
+        const services = await this.getAll();
 
         const newId = services.length > 0
             ? Math.max(...services.map(service => service.id)) + 1
@@ -54,13 +36,16 @@ class ServiceManager {
 
         services.push(newService);
 
-        await this.saveServices(services);
+        await fs.writeFile(
+            servicesPath,
+            JSON.stringify(services, null, 2)
+        );
 
         return newService;
     }
 
-    async updateService(id, updatedData) {
-        const services = await this.getServices();
+    async update(id, updatedData) {
+        const services = await this.getAll();
 
         const index = services.findIndex(
             service => service.id === Number(id)
@@ -78,13 +63,16 @@ class ServiceManager {
 
         services[index] = updatedService;
 
-        await this.saveServices(services);
+        await fs.writeFile(
+            servicesPath,
+            JSON.stringify(services, null, 2)
+        );
 
         return updatedService;
     }
 
-    async deleteService(id) {
-        const services = await this.getServices();
+    async delete(id) {
+        const services = await this.getAll();
 
         const index = services.findIndex(
             service => service.id === Number(id)
@@ -96,17 +84,13 @@ class ServiceManager {
 
         const deletedService = services.splice(index, 1)[0];
 
-        await this.saveServices(services);
-
-        return deletedService;
-    }
-
-    async saveServices(services) {
         await fs.writeFile(
             servicesPath,
             JSON.stringify(services, null, 2)
         );
+
+        return deletedService;
     }
 }
 
-export default ServiceManager;
+export default ServicesDAO;

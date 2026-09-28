@@ -1,13 +1,12 @@
-import ServiceManager from '../managers/ServiceManager.js';
+import ServicesService from '../services/services.service.js';
 
-const serviceManager = new ServiceManager();
-
+const servicesService = new ServicesService();
 
 export const getServices = async (req, res) => {
     try {
         const { category, available } = req.query;
 
-        let services = await serviceManager.getServices();
+        let services = await servicesService.getServices();
 
         if (category) {
             services = services.filter(
@@ -18,7 +17,8 @@ export const getServices = async (req, res) => {
 
         if (available !== undefined) {
             services = services.filter(
-                service => service.available === (available === 'true')
+                service =>
+                    service.available === (available === 'true')
             );
         }
 
@@ -30,10 +30,9 @@ export const getServices = async (req, res) => {
     }
 };
 
-
 export const getServiceById = async (req, res) => {
     try {
-        const service = await serviceManager.getServiceById(
+        const service = await servicesService.getServiceById(
             req.params.sid
         );
 
@@ -51,10 +50,11 @@ export const getServiceById = async (req, res) => {
     }
 };
 
-
 export const createService = async (req, res) => {
     try {
-        const newService = await serviceManager.addService(req.body);
+        const newService = await servicesService.createService(
+            req.body
+        );
 
         res.status(201).json(newService);
     } catch (error) {
@@ -64,7 +64,6 @@ export const createService = async (req, res) => {
     }
 };
 
-
 export const updateService = async (req, res) => {
     try {
         if (req.body.id !== undefined) {
@@ -73,7 +72,7 @@ export const updateService = async (req, res) => {
             });
         }
 
-        const updatedService = await serviceManager.updateService(
+        const updatedService = await servicesService.updateService(
             req.params.sid,
             req.body
         );
@@ -92,10 +91,9 @@ export const updateService = async (req, res) => {
     }
 };
 
-
 export const deleteService = async (req, res) => {
     try {
-        const deletedService = await serviceManager.deleteService(
+        const deletedService = await servicesService.deleteService(
             req.params.sid
         );
 

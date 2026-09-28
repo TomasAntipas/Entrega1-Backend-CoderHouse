@@ -1,13 +1,12 @@
-import BookingManager from '../managers/BookingManager.js';
-import ServiceManager from '../managers/ServiceManager.js';
+import BookingsService from '../services/bookings.service.js';
 
-const bookingManager = new BookingManager();
-const serviceManager = new ServiceManager();
-
+const bookingsService = new BookingsService();
 
 export const createBooking = async (req, res) => {
     try {
-        const newBooking = await bookingManager.createBooking(req.body);
+        const newBooking = await bookingsService.createBooking(
+            req.body
+        );
 
         res.status(201).json(newBooking);
     } catch (error) {
@@ -17,10 +16,9 @@ export const createBooking = async (req, res) => {
     }
 };
 
-
 export const getBookingById = async (req, res) => {
     try {
-        const booking = await bookingManager.getBookingById(
+        const booking = await bookingsService.getBookingById(
             req.params.bid
         );
 
@@ -38,36 +36,28 @@ export const getBookingById = async (req, res) => {
     }
 };
 
-
 export const addServiceToBooking = async (req, res) => {
     try {
-        const booking = await bookingManager.getBookingById(
-            req.params.bid
-        );
+        const updatedBooking =
+            await bookingsService.addServiceToBooking(
+                req.params.bid,
+                req.params.sid
+            );
 
-        if (!booking) {
+        if (!updatedBooking) {
             return res.status(404).json({
                 error: 'Reserva no encontrada'
             });
         }
 
-        const serviceId = Number(req.params.sid);
-
-        const service = await serviceManager.getServiceById(serviceId);
-
-        if (!service) {
+        res.status(200).json(updatedBooking);
+    } catch (error) {
+        if (error.status === 404) {
             return res.status(404).json({
-                error: 'Servicio no encontrado'
+                error: error.message
             });
         }
 
-        const updatedBooking = await bookingManager.addServiceToBooking(
-            req.params.bid,
-            serviceId
-        );
-
-        res.status(200).json(updatedBooking);
-    } catch (error) {
         res.status(500).json({
             error: error.message
         });
