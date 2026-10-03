@@ -1,74 +1,32 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const bookingsPath = path.join(__dirname, '../data/bookings.json');
+import mongoose from 'mongoose';
+import Booking from '../models/booking.model.js';
 
 class BookingsDAO {
-    async getAll() {
-        const data = await fs.readFile(bookingsPath, 'utf-8');
-
-        return JSON.parse(data);
-    }
-
     async getById(id) {
-        const bookings = await this.getAll();
-
-        return bookings.find(
-            booking => booking.id === Number(id)
-        ) || null;
-    }
-
-    async create(bookingData) {
-        const bookings = await this.getAll();
-
-        const newId = bookings.length > 0
-            ? Math.max(...bookings.map(booking => booking.id)) + 1
-            : 1;
-
-        const newBooking = {
-            id: newId,
-            ...bookingData
-        };
-
-        bookings.push(newBooking);
-
-        await fs.writeFile(
-            bookingsPath,
-            JSON.stringify(bookings, null, 2)
-        );
-
-        return newBooking;
-    }
-
-    async update(id, updatedData) {
-        const bookings = await this.getAll();
-
-        const index = bookings.findIndex(
-            booking => booking.id === Number(id)
-        );
-
-        if (index === -1) {
+        if (!mongoose.isValidObjectId(id)) {
             return null;
         }
 
-        const updatedBooking = {
-            ...bookings[index],
-            ...updatedData,
-            id: bookings[index].id
-        };
+        return await Booking.findById(id);
+    }
 
-        bookings[index] = updatedBooking;
+    async create(bookingData) {
+        return await Booking.create(bookingData);
+    }
 
-        await fs.writeFile(
-            bookingsPath,
-            JSON.stringify(bookings, null, 2)
+    async update(id, updatedData) {
+        if (!mongoose.isValidObjectId(id)) {
+            return null;
+        }
+
+        return await Booking.findByIdAndUpdate(
+            id,
+            updatedData,
+            {
+                new: true,
+                runValidators: true
+            }
         );
-
-        return updatedBooking;
     }
 }
 

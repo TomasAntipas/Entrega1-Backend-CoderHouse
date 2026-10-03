@@ -5,8 +5,28 @@ class ServicesService {
         this.repository = new ServicesRepository();
     }
 
-    async getServices() {
-        return await this.repository.getAll();
+    async getServices(filters = {}) {
+        let services = await this.repository.getAll();
+
+        const { category, available } = filters;
+
+        if (category) {
+            services = services.filter(
+                service =>
+                    service.category?.toLowerCase() ===
+                    category.toLowerCase()
+            );
+        }
+
+        if (available !== undefined) {
+            const availableValue = available === 'true';
+
+            services = services.filter(
+                service => service.available === availableValue
+            );
+        }
+
+        return services;
     }
 
     async getServiceById(id) {
@@ -14,14 +34,7 @@ class ServicesService {
     }
 
     async createService(serviceData) {
-        const requiredFields = [
-            'name',
-            'description',
-            'duration',
-            'price',
-            'category',
-            'available'
-        ];
+        const requiredFields = ['name', 'duration', 'price'];
 
         const hasAllFields = requiredFields.every(
             field => serviceData[field] !== undefined
@@ -29,7 +42,7 @@ class ServicesService {
 
         if (!hasAllFields) {
             throw new Error(
-                'El servicio debe contener todos los campos requeridos'
+                'El servicio debe contener nombre, duración y precio'
             );
         }
 

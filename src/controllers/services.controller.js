@@ -4,23 +4,7 @@ const servicesService = new ServicesService();
 
 export const getServices = async (req, res) => {
     try {
-        const { category, available } = req.query;
-
-        let services = await servicesService.getServices();
-
-        if (category) {
-            services = services.filter(
-                service =>
-                    service.category.toLowerCase() === category.toLowerCase()
-            );
-        }
-
-        if (available !== undefined) {
-            services = services.filter(
-                service =>
-                    service.available === (available === 'true')
-            );
-        }
+        const services = await servicesService.getServices(req.query);
 
         res.status(200).json(services);
     } catch (error) {
@@ -66,7 +50,10 @@ export const createService = async (req, res) => {
 
 export const updateService = async (req, res) => {
     try {
-        if (req.body.id !== undefined) {
+        if (
+            req.body.id !== undefined ||
+            req.body._id !== undefined
+        ) {
             return res.status(400).json({
                 error: 'No se puede modificar el id del servicio'
             });
@@ -85,7 +72,7 @@ export const updateService = async (req, res) => {
 
         res.status(200).json(updatedService);
     } catch (error) {
-        res.status(500).json({
+        res.status(400).json({
             error: error.message
         });
     }

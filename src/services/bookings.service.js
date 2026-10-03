@@ -1,3 +1,5 @@
+
+import mongoose from 'mongoose';
 import BookingsRepository from '../repositories/bookings.repository.js';
 import ServicesRepository from '../repositories/services.repository.js';
 
@@ -12,8 +14,7 @@ class BookingsService {
             'clientName',
             'clientEmail',
             'date',
-            'time',
-            'status'
+            'time'
         ];
 
         const hasAllFields = requiredFields.every(
@@ -31,9 +32,12 @@ class BookingsService {
             clientEmail: bookingData.clientEmail,
             date: bookingData.date,
             time: bookingData.time,
-            status: bookingData.status,
             services: bookingData.services || []
         };
+
+        if (bookingData.status !== undefined) {
+            newBooking.status = bookingData.status;
+        }
 
         return await this.repository.create(newBooking);
     }
@@ -43,6 +47,16 @@ class BookingsService {
     }
 
     async addServiceToBooking(bookingId, serviceId) {
+        if (!mongoose.isValidObjectId(bookingId)) {
+            return null;
+        }
+
+        if (!mongoose.isValidObjectId(serviceId)) {
+            const error = new Error('Servicio no encontrado');
+            error.status = 404;
+            throw error;
+        }
+
         const booking = await this.repository.getById(bookingId);
 
         if (!booking) {
@@ -60,25 +74,21 @@ class BookingsService {
         const services = booking.services || [];
 
         const existingService = services.find(
-            item => item.service === Number(serviceId)
+            item => item.service.toString() === service._id.toString()
         );
 
         if (existingService) {
             existingService.quantity += 1;
         } else {
             services.push({
-                service: Number(serviceId),
+                service: service._id,
                 quantity: 1
             });
         }
 
-        booking.services = services;
-
         return await this.repository.update(
             bookingId,
-            {
-                services: booking.services
-            }
+            { services }
         );
     }
 }
