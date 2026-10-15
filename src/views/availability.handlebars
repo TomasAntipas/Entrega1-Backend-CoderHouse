@@ -1,0 +1,33 @@
+<section>
+    <h2>Disponibilidad de servicios</h2>
+
+    <div id="availability-services">
+        {{#each services}}
+            <article class="card">
+                <h3>{{name}}</h3>
+                <p><strong>Duración:</strong> {{duration}} minutos</p>
+                <p><strong>Disponibilidad:</strong> {{availabilityText}}</p>
+            </article>
+        {{else}}
+            <p>No hay servicios registrados.</p>
+        {{/each}}
+    </div>
+</section>
+
+<section>
+    <h2>Reservas registradas</h2>
+
+    <div id="bookings-list">
+        {{#each bookings}}
+            <article class="card">
+                <h3>{{clientName}}</h3>
+                <p><strong>Correo:</strong> {{clientEmail}}</p>
+                <p><strong>Fecha:</strong> {{date}}</p>
+                <p><strong>Hora:</strong> {{time}}</p>
+                <p><strong>Estado:</strong> {{status}}</p>
+            </article>
+        {{else}}
+            <p>No hay reservas registradas.</p>
+        {{/each}}
+    </div>
+</section>

@@ -1,0 +1,17 @@
+<section>
+    <h2>Servicios disponibles</h2>
+
+    <div id="services-list">
+        {{#each services}}
+            <article class="card">
+                <h3>{{name}}</h3>
+                <p><strong>Descripción:</strong> {{description}}</p>
+                <p><strong>Duración:</strong> {{duration}} minutos</p>
+                <p><strong>Categoría:</strong> {{category}}</p>
+                <p><strong>Disponibilidad:</strong> {{availabilityText}}</p>
+            </article>
+        {{else}}
+            <p>No hay servicios registrados.</p>
+        {{/each}}
+    </div>
+</section>

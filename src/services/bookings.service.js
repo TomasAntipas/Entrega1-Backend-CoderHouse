@@ -1,5 +1,4 @@
-
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 import BookingsRepository from '../repositories/bookings.repository.js';
 import ServicesRepository from '../repositories/services.repository.js';
 
@@ -40,6 +39,10 @@ class BookingsService {
         }
 
         return await this.repository.create(newBooking);
+    }
+
+    async getBookings() {
+        return await this.repository.getAll();
     }
 
     async getBookingById(id) {
@@ -86,10 +89,7 @@ class BookingsService {
             });
         }
 
-        return await this.repository.update(
-            bookingId,
-            { services }
-        );
+        return await this.repository.update(bookingId, { services });
     }
 }
 
