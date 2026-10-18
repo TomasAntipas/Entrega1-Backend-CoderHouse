@@ -2,8 +2,48 @@ import mongoose from 'mongoose';
 import Service from '../models/service.model.js';
 
 class ServicesDAO {
-    async getAll() {
-        return await Service.find();
+    async getAll({
+        category,
+        available,
+        page = 1,
+        limit = 10,
+        sortBy = 'name',
+        order = 'asc'
+    } = {}) {
+        const filter = {};
+
+        if (category) {
+            filter.category = {
+                $regex: `^${category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+                $options: 'i'
+            };
+        }
+
+        if (available !== undefined) {
+            filter.available = available;
+        }
+
+        const totalResults = await Service.countDocuments(filter);
+
+        const totalPages = Math.ceil(totalResults / limit);
+        const skip = (page - 1) * limit;
+
+        const sortOrder = order === 'desc' ? -1 : 1;
+
+        const results = await Service.find(filter)
+            .sort({ [sortBy]: sortOrder })
+            .skip(skip)
+            .limit(limit);
+
+        return {
+            results,
+            totalResults,
+            currentPage: page,
+            limit,
+            totalPages,
+            hasPrevPage: page > 1,
+            hasNextPage: page < totalPages
+        };
     }
 
     async getById(id) {
@@ -11,11 +51,11 @@ class ServicesDAO {
             return null;
         }
 
-        return await Service.findById(id);
+        return Service.findById(id);
     }
 
     async create(serviceData) {
-        return await Service.create(serviceData);
+        return Service.create(serviceData);
     }
 
     async update(id, updatedData) {
@@ -23,7 +63,7 @@ class ServicesDAO {
             return null;
         }
 
-        return await Service.findByIdAndUpdate(
+        return Service.findByIdAndUpdate(
             id,
             updatedData,
             {
@@ -38,7 +78,7 @@ class ServicesDAO {
             return null;
         }
 
-        return await Service.findByIdAndDelete(id);
+        return Service.findByIdAndDelete(id);
     }
 }
 

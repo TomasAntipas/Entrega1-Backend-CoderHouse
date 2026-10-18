@@ -5,24 +5,24 @@ class ServicesRepository {
         this.dao = new ServicesDAO();
     }
 
-    async getAll() {
-        return await this.dao.getAll();
+    async getAll(options) {
+        return this.dao.getAll(options);
     }
 
     async getById(id) {
-        return await this.dao.getById(id);
+        return this.dao.getById(id);
     }
 
     async create(serviceData) {
-        return await this.dao.create(serviceData);
+        return this.dao.create(serviceData);
     }
 
     async update(id, updatedData) {
-        return await this.dao.update(id, updatedData);
+        return this.dao.update(id, updatedData);
     }
 
     async delete(id) {
-        return await this.dao.delete(id);
+        return this.dao.delete(id);
     }
 }
 

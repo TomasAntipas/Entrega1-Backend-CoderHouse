@@ -4,25 +4,39 @@ const servicesService = new ServicesService();
 
 export const getServices = async (req, res) => {
     try {
-        const services = await servicesService.getServices(req.query);
-        
-        res.status(200).json(services);
+        const result = await servicesService.getServices(
+            req.validatedQuery
+        );
+
+        return res.status(200).json(result);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al obtener servicios:', error);
+
+        return res.status(500).json({
+            error: 'Error al obtener los servicios'
+        });
     }
 };
 
 export const getServiceById = async (req, res) => {
     try {
-        const service = await servicesService.getServiceById(req.params.sid);
+        const service = await servicesService.getServiceById(
+            req.params.sid
+        );
 
         if (!service) {
-            return res.status(404).json({ error: 'Servicio no encontrado' });
+            return res.status(404).json({
+                error: 'Servicio no encontrado'
+            });
         }
 
-        res.status(200).json(service);
+        return res.status(200).json(service);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al obtener servicio:', error);
+
+        return res.status(500).json({
+            error: 'Error al obtener el servicio'
+        });
     }
 };
 
@@ -32,19 +46,18 @@ export const createService = async (req, res) => {
 
         req.app.get('io')?.emit('services:updated');
 
-        res.status(201).json(newService);
+        return res.status(201).json(newService);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        console.error('Error al crear servicio:', error);
+
+        return res.status(500).json({
+            error: 'Error al crear el servicio'
+        });
     }
 };
 
 export const updateService = async (req, res) => {
     try {
-        if (req.body.id !== undefined || req.body._id !== undefined) {
-            return res.status(400).json({
-                error: 'No se puede modificar el id del servicio'
-            });
-        }
 
         const updatedService = await servicesService.updateService(
             req.params.sid,
@@ -52,14 +65,20 @@ export const updateService = async (req, res) => {
         );
 
         if (!updatedService) {
-            return res.status(404).json({ error: 'Servicio no encontrado' });
+            return res.status(404).json({
+                error: 'Servicio no encontrado'
+            });
         }
 
         req.app.get('io')?.emit('services:updated');
 
-        res.status(200).json(updatedService);
+        return res.status(200).json(updatedService);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        console.error('Error al actualizar servicio:', error);
+
+        return res.status(500).json({
+            error: 'Error al actualizar el servicio'
+        });
     }
 };
 
@@ -70,13 +89,19 @@ export const deleteService = async (req, res) => {
         );
 
         if (!deletedService) {
-            return res.status(404).json({ error: 'Servicio no encontrado' });
+            return res.status(404).json({
+                error: 'Servicio no encontrado'
+            });
         }
 
         req.app.get('io')?.emit('services:updated');
 
-        res.status(200).json(deletedService);
+        return res.status(200).json(deletedService);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al eliminar servicio:', error);
+
+        return res.status(500).json({
+            error: 'Error al eliminar el servicio'
+        });
     }
 };

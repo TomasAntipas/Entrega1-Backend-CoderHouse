@@ -8,15 +8,38 @@ import {
     deleteService
 } from '../controllers/services.controller.js';
 
+import {
+    createServiceSchema,
+    updateServiceSchema,
+    serviceQuerySchema
+} from '../validators/services.validator.js';
+
+import {
+    validateBody,
+    validateQuery
+} from '../middlewares/validate.middleware.js';
+
 const router = express.Router();
 
-router.get('/', getServices);
+router.get(
+    '/',
+    validateQuery(serviceQuerySchema),
+    getServices
+);
 
 router.get('/:sid', getServiceById);
 
-router.post('/', createService);
+router.post(
+    '/',
+    validateBody(createServiceSchema),
+    createService
+);
 
-router.put('/:sid', updateService);
+router.put(
+    '/:sid',
+    validateBody(updateServiceSchema),
+    updateService
+);
 
 router.delete('/:sid', deleteService);
 

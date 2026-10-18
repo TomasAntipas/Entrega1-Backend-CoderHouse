@@ -1,32 +1,28 @@
-import mongoose from 'mongoose';
-import Booking from '../models/booking.model.js';
+import Booking from "../models/booking.model.js";
 
 class BookingsDAO {
     async getAll() {
-        return await Booking.find().populate('services.service');
+    return await Booking.find().populate("services.service");
     }
 
     async getById(id) {
-        if (!mongoose.isValidObjectId(id)) {
-            return null;
-        }
-
-        return await Booking.findById(id);
+    return await Booking.findById(id).populate("services.service");
     }
 
     async create(bookingData) {
-        return await Booking.create(bookingData);
+    const booking = new Booking(bookingData);
+    return await booking.save();
     }
 
-    async update(id, updatedData) {
-        if (!mongoose.isValidObjectId(id)) {
-            return null;
-        }
+    async update(id, bookingData) {
+    return await Booking.findByIdAndUpdate(id, bookingData, {
+        new: true,
+        runValidators: true,
+    }).populate("services.service");
+    }
 
-        return await Booking.findByIdAndUpdate(id, updatedData, {
-            new: true,
-            runValidators: true
-        });
+    async delete(id) {
+    return await Booking.findByIdAndDelete(id);
     }
 }
 
