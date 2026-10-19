@@ -1,96 +1,76 @@
-import mongoose from 'mongoose'
-import BookingsRepository from '../repositories/bookings.repository.js';
-import ServicesRepository from '../repositories/services.repository.js';
+import BookingsRepository from "../repositories/bookings.repository.js";
+import ServicesRepository from "../repositories/services.repository.js";
 
 class BookingsService {
-    constructor() {
-        this.repository = new BookingsRepository();
-        this.servicesRepository = new ServicesRepository();
+  constructor() {
+    this.repository = new BookingsRepository();
+    this.servicesRepository = new ServicesRepository();
+  }
+
+  async getAllBookings() {
+    return await this.repository.getAll();
+  }
+
+  async getBookingById(bookingId) {
+    return await this.repository.getById(bookingId);
+  }
+
+  async createBooking(bookingData) {
+    const services = bookingData.services || [];
+
+    for (const item of services) {
+      const service = await this.servicesRepository.getById(
+        item.service
+      );
+
+      if (!service) {
+        throw new Error(`Servicio no encontrado: ${item.service}`);
+      }
     }
 
-    async createBooking(bookingData) {
-        const requiredFields = [
-            'clientName',
-            'clientEmail',
-            'date',
-            'time'
-        ];
+    return await this.repository.create(bookingData);
+  }
 
-        const hasAllFields = requiredFields.every(
-            field => bookingData[field] !== undefined
-        );
+  async updateBooking(bookingId, bookingData) {
+    return await this.repository.update(bookingId, bookingData);
+  }
 
-        if (!hasAllFields) {
-            throw new Error(
-                'La reserva debe contener todos los campos requeridos'
-            );
-        }
+  async deleteBooking(bookingId) {
+    return await this.repository.delete(bookingId);
+  }
 
-        const newBooking = {
-            clientName: bookingData.clientName,
-            clientEmail: bookingData.clientEmail,
-            date: bookingData.date,
-            time: bookingData.time,
-            services: bookingData.services || []
-        };
+  async addServiceToBooking(bookingId, serviceId, quantity = 1) {
+    const booking = await this.repository.getById(bookingId);
 
-        if (bookingData.status !== undefined) {
-            newBooking.status = bookingData.status;
-        }
-
-        return await this.repository.create(newBooking);
+    if (!booking) {
+      throw new Error("Reserva no encontrada");
     }
 
-    async getBookings() {
-        return await this.repository.getAll();
+    const service = await this.servicesRepository.getById(serviceId);
+
+    if (!service) {
+      throw new Error("Servicio no encontrado");
     }
 
-    async getBookingById(id) {
-        return await this.repository.getById(id);
+    const services = booking.services || [];
+
+    const existingService = services.find((item) => {
+      const currentServiceId = item.service?._id ?? item.service;
+
+      return currentServiceId.toString() === service._id.toString();
+    });
+
+    if (existingService) {
+      existingService.quantity += Number(quantity);
+    } else {
+      services.push({
+        service: service._id,
+        quantity: Number(quantity),
+      });
     }
 
-    async addServiceToBooking(bookingId, serviceId) {
-        if (!mongoose.isValidObjectId(bookingId)) {
-            return null;
-        }
-
-        if (!mongoose.isValidObjectId(serviceId)) {
-            const error = new Error('Servicio no encontrado');
-            error.status = 404;
-            throw error;
-        }
-
-        const booking = await this.repository.getById(bookingId);
-
-        if (!booking) {
-            return null;
-        }
-
-        const service = await this.servicesRepository.getById(serviceId);
-
-        if (!service) {
-            const error = new Error('Servicio no encontrado');
-            error.status = 404;
-            throw error;
-        }
-
-        const services = booking.services || [];
-
-        const existingService = services.find(
-            item => item.service.toString() === service._id.toString()
-        );
-
-        if (existingService) {
-            existingService.quantity += 1;
-        } else {
-            services.push({
-                service: service._id,
-                quantity: 1
-            });
-        }
-
-        return await this.repository.update(bookingId, { services });
-    }
+    return await this.repository.update(bookingId, { services });
+  }
 }
 
 export default BookingsService;
