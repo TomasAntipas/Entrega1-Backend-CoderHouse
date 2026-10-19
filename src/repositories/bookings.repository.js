@@ -9,16 +9,21 @@ class BookingsRepository {
         return await this.dao.getAll();
     }
 
-    async create(bookingData) {
-        return await this.dao.create(bookingData);
-    }
-
     async getById(id) {
         return await this.dao.getById(id);
     }
 
+    async create(bookingData) {
+        return await this.dao.create(bookingData);
+    }
+    
+
     async update(id, updatedData) {
         return await this.dao.update(id, updatedData);
+    }
+
+    async delete(id) {
+        return await this.dao.delete(id);
     }
 }
 

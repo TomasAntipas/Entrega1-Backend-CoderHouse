@@ -14,7 +14,7 @@ function renderServices(services) {
         return;
     }
 
-    services.forEach(service => {
+    services.forEach((service) => {
         const card = document.createElement('article');
         card.className = 'card';
 
@@ -22,21 +22,25 @@ function renderServices(services) {
         title.textContent = service.name;
 
         const description = document.createElement('p');
-        description.textContent = `Descripción: ${service.description || ''}`;
+        description.textContent =
+            `Descripción: ${service.description || ''}`;
 
         const duration = document.createElement('p');
-        duration.textContent = `Duración: ${service.duration} minutos`;
+        duration.textContent =
+            `Duración: ${service.duration} minutos`;
 
         const price = document.createElement('p');
         price.textContent = `Precio: $${service.price}`;
 
         const category = document.createElement('p');
-        category.textContent = `Categoría: ${service.category || ''}`;
+        category.textContent =
+            `Categoría: ${service.category || ''}`;
 
         const availability = document.createElement('p');
-        availability.textContent = `Disponibilidad: ${
-            service.available ? 'Disponible' : 'No disponible'
-        }`;
+        availability.textContent =
+            `Disponibilidad: ${
+                service.available ? 'Disponible' : 'No disponible'
+            }`;
 
         card.append(
             title,
@@ -59,7 +63,17 @@ async function refreshServices() {
             throw new Error('Error al obtener servicios');
         }
 
-        const services = await response.json();
+        const data = await response.json();
+
+        // La API devuelve un objeto paginado con la propiedad results.
+        const services = Array.isArray(data)
+            ? data
+            : data.results;
+
+        if (!Array.isArray(services)) {
+            throw new Error('Formato de respuesta de servicios inválido');
+        }
+
         renderServices(services);
     } catch (error) {
         console.error(error.message);
@@ -75,12 +89,13 @@ async function refreshAvailability() {
         }
 
         const html = await response.text();
+
         const updatedDocument = new DOMParser().parseFromString(
             html,
             'text/html'
         );
 
-        ['availability-services', 'bookings-list'].forEach(id => {
+        ['availability-services', 'bookings-list'].forEach((id) => {
             const current = document.getElementById(id);
             const updated = updatedDocument.getElementById(id);
 

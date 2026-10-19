@@ -45,7 +45,7 @@ export const renderAvailability = async (req, res) => {
     try {
         const [services, bookings] = await Promise.all([
             getAllServicesForViews(),
-            bookingsService.getBookings()
+            bookingsService.getAllBookings()
         ]);
 
         const formattedBookings = bookings.map((booking) => {
