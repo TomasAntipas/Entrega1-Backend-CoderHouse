@@ -1,3 +1,4 @@
+
 import BookingsRepository from "../repositories/bookings.repository.js";
 import ServicesRepository from "../repositories/services.repository.js";
 
@@ -24,7 +25,11 @@ class BookingsService {
       );
 
       if (!service) {
-        throw new Error(`Servicio no encontrado: ${item.service}`);
+        const error = new Error(
+          `Servicio no encontrado: ${item.service}`
+        );
+        error.status = 404;
+        throw error;
       }
     }
 
@@ -43,13 +48,17 @@ class BookingsService {
     const booking = await this.repository.getById(bookingId);
 
     if (!booking) {
-      throw new Error("Reserva no encontrada");
+      const error = new Error("Reserva no encontrada");
+      error.status = 404;
+      throw error;
     }
 
     const service = await this.servicesRepository.getById(serviceId);
 
     if (!service) {
-      throw new Error("Servicio no encontrado");
+      const error = new Error("Servicio no encontrado");
+      error.status = 404;
+      throw error;
     }
 
     const services = booking.services || [];
